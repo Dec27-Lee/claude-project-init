@@ -1,0 +1,76 @@
+{
+  "id": "thinking-distiller",
+  "name": "thinking-distiller",
+  "version": "1.4.0",
+  "description": "面向 clear-thinking 的方法蒸馏技能：从书籍、文章、演讲、访谈、人物材料或研究资料中提取可复用判断动作，并沉淀为 clear-thinking 可调用的微技能。",
+  "category": "thinking-extension",
+  "recommended": false,
+  "target": ".claude/skills/thinking-distiller",
+  "dependencies": [
+    "clear-thinking"
+  ],
+  "files": [
+    {
+      "from": "SKILL.md",
+      "to": "SKILL.md",
+      "mode": "copy"
+    },
+    {
+      "from": "resources",
+      "to": "resources",
+      "mode": "copy",
+      "type": "directory",
+      "exclude": [
+        "**/.state/**",
+        "**/__pycache__/**",
+        "**/*.pyc"
+      ]
+    }
+  ],
+  "initFiles": [
+    {
+      "from": "init/local/thinking-distiller/index.md",
+      "to": "local/thinking-distiller/index.md",
+      "mode": "create-if-missing",
+      "description": "初始化 thinking-distiller 蒸馏任务索引"
+    },
+    {
+      "from": "init/local/thinking-distiller/sessions/.gitkeep",
+      "to": "local/thinking-distiller/sessions/.gitkeep",
+      "mode": "create-if-missing",
+      "description": "初始化 thinking-distiller 过程目录"
+    }
+  ],
+  "workspaceIndexEntries": {
+    "secondaryIndexes": [
+      {
+        "path": "local/thinking-distiller/index.md",
+        "scope": "方法蒸馏过程记录",
+        "contents": "每次书籍/资料蒸馏的日期、材料、目标问题域、过程目录、接入状态和备注",
+        "next": "命中的 local/thinking-distiller/sessions/*/"
+      }
+    ],
+    "assets": [
+      {
+        "path": ".claude/skills/thinking-distiller/SKILL.md",
+        "purpose": "thinking-distiller 技能入口；面向 clear-thinking 的方法蒸馏工厂"
+      },
+      {
+        "path": ".claude/skills/thinking-distiller/resources/",
+        "purpose": "蒸馏协议、模板、接入规则和质量检查"
+      },
+      {
+        "path": "local/thinking-distiller/index.md",
+        "purpose": "thinking-distiller 蒸馏任务二级索引"
+      },
+      {
+        "path": "local/thinking-distiller/sessions/",
+        "purpose": "thinking-distiller 每次正式蒸馏任务的过程产物目录"
+      }
+    ]
+  },
+  "postInstallNotes": [
+    "thinking-distiller 依赖 clear-thinking；安装时会自动包含 clear-thinking。",
+    "过程产物写入 local/thinking-distiller/，不要写入 .claude/skills/thinking-distiller/。"
+  ]
+}

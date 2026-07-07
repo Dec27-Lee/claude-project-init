@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "plugin": "claude-project-init",
+  "description": "可安装到目标工作区 .claude/skills 的 workspace skill packs。",
+  "presets": {
+    "recommended": [
+      "work-journal",
+      "clear-thinking",
+      "project-docs",
+      "verify-flow"
+    ],
+    "minimal": [
+      "project-docs",
+      "verify-flow"
+    ],
+    "design": [
+      "work-journal",
+      "clear-thinking",
+      "project-docs",
+      "verify-flow",
+      "frontend-design-guide"
+    ],
+    "thinking-lab": [
+      "work-journal",
+      "clear-thinking",
+      "thinking-distiller",
+      "project-docs",
+      "verify-flow"
+    ]
+  },
+  "packs": [
+    {
+      "id": "work-journal",
+      "path": "packs/work-journal",
+      "recommended": true
+    },
+    {
+      "id": "clear-thinking",
+      "path": "packs/clear-thinking",
+      "recommended": true
+    },
+    {
+      "id": "thinking-distiller",
+      "path": "packs/thinking-distiller",
+      "recommended": false
+    },
+    {
+      "id": "project-docs",
+      "path": "packs/project-docs",
+      "recommended": true
+    },
+    {
+      "id": "verify-flow",
+      "path": "packs/verify-flow",
+      "recommended": true
+    },
+    {
+      "id": "frontend-design-guide",
+      "path": "packs/frontend-design-guide",
+      "recommended": false
+    }
+  ],
+  "templates": {
+    "claudeMd": "templates/CLAUDE.md.template",
+    "workspaceIndex": "templates/workspace-index.md.template",
+    "skillsIndex": "templates/skills-INDEX.md.template",
+    "settings": "templates/settings.json"
+  }
+}

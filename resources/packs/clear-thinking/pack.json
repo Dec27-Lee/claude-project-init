@@ -1,0 +1,43 @@
+{
+  "id": "clear-thinking",
+  "name": "clear-thinking",
+  "version": "2.7.0",
+  "description": "复杂判断与规划辅助。用于目标不清、多目标冲突、产品/研发/经营/组织/长期选择、复盘，或用户要求“想清楚/分析/判断/规划”。",
+  "category": "thinking",
+  "recommended": true,
+  "target": ".claude/skills/clear-thinking",
+  "files": [
+    {
+      "from": "SKILL.md",
+      "to": "SKILL.md",
+      "mode": "copy"
+    },
+    {
+      "from": "resources",
+      "to": "resources",
+      "mode": "copy",
+      "type": "directory",
+      "exclude": [
+        "**/.state/**",
+        "**/__pycache__/**",
+        "**/*.pyc"
+      ]
+    }
+  ],
+  "workspaceIndexEntries": {
+    "assets": [
+      {
+        "path": ".claude/skills/clear-thinking/SKILL.md",
+        "purpose": "clear-thinking 技能入口；复杂判断、规划、取舍、复盘前按需使用"
+      },
+      {
+        "path": ".claude/skills/clear-thinking/resources/",
+        "purpose": "clear-thinking 路由器、微技能索引、检查清单和具体微技能文件目录"
+      }
+    ]
+  },
+  "postInstallNotes": [
+    "clear-thinking 需要完整 resources/，不要只复制 SKILL.md。",
+    "采用某个微技能前，必须读取对应 resources/micro-skills/<微技能>.md。"
+  ]
+}

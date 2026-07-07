@@ -1,0 +1,78 @@
+{
+  "id": "work-journal",
+  "name": "work-journal",
+  "version": "1.1.0",
+  "description": "工作日志技能：记录需求、续接历史、复盘进度、完成检查，适合需要跨轮续接的工作区。",
+  "category": "workflow",
+  "recommended": true,
+  "target": ".claude/skills/work-journal",
+  "files": [
+    {
+      "from": "SKILL.md",
+      "to": "SKILL.md",
+      "mode": "copy"
+    },
+    {
+      "from": "resources/hooks/reminder.py",
+      "to": "resources/hooks/reminder.py",
+      "mode": "copy"
+    },
+    {
+      "from": "resources/.gitignore",
+      "to": "resources/.gitignore",
+      "mode": "copy"
+    }
+  ],
+  "initFiles": [
+    {
+      "from": "init/local/README.md",
+      "to": "local/README.md",
+      "mode": "create-if-missing",
+      "description": "初始化 local/ 目录说明"
+    },
+    {
+      "from": "init/local/work-journal/index.md",
+      "to": "local/work-journal/index.md",
+      "mode": "create-if-missing",
+      "description": "初始化工作日志二级索引"
+    },
+    {
+      "from": "init/local/work-journal/records/.gitkeep",
+      "to": "local/work-journal/records/.gitkeep",
+      "mode": "create-if-missing",
+      "description": "初始化工作日志记录目录"
+    }
+  ],
+  "workspaceIndexEntries": {
+    "secondaryIndexes": [
+      {
+        "path": "local/work-journal/index.md",
+        "scope": "工作日志历史记录",
+        "contents": "每条记录的日期、标题、状态、关键词/适用场景、记录文件路径、备注",
+        "next": "命中的 local/work-journal/records/*.md"
+      }
+    ],
+    "assets": [
+      {
+        "path": ".claude/skills/work-journal/SKILL.md",
+        "purpose": "工作日志技能入口"
+      },
+      {
+        "path": ".claude/skills/work-journal/resources/hooks/reminder.py",
+        "purpose": "工作日志提醒 hook 脚本；默认只复制，不自动启用"
+      },
+      {
+        "path": "local/work-journal/index.md",
+        "purpose": "工作日志二级索引"
+      },
+      {
+        "path": "local/work-journal/records/",
+        "purpose": "工作日志记录目录"
+      }
+    ]
+  },
+  "postInstallNotes": [
+    "work-journal 的长期数据写入 local/work-journal/。",
+    "reminder.py 只作为资源复制；如需启用 hook，请人工审查后再合并 settings。"
+  ]
+}

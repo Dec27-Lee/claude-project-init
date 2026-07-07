@@ -1,0 +1,23 @@
+# 工作区索引
+
+本索引由 `claude-project-init` 初始化和维护。它只记录入口级导航，不替代 `CLAUDE.md`、技能说明或历史记录。
+
+## 顶层入口
+
+| 路径 | 类型 | 用途 | 入口文件 |
+| --- | --- | --- | --- |
+| `CLAUDE.md` | 工作区规则 | Claude Code 在当前工作区的协作规则、技能调用和完成检查规则 | `CLAUDE.md` |
+| `.claude/` | Claude 配置 | settings、workspace-index、skills 和项目级 Claude 配置 | `.claude/workspace-index.md` |
+| `.claude/skills/` | 工作区技能 | 当前工作区安装的 Claude Code skills | `.claude/skills/INDEX.md` |
+
+## 二级索引入口
+
+<!-- claude-project-init:secondary-index:start -->
+<!-- claude-project-init 会在这里维护二级索引入口。 -->
+<!-- claude-project-init:secondary-index:end -->
+
+## Claude 工作区资产索引
+
+<!-- claude-project-init:assets:start -->
+<!-- claude-project-init 会在这里维护 Claude 工作区资产列表。 -->
+<!-- claude-project-init:assets:end -->

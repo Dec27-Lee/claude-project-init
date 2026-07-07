@@ -1,0 +1,16 @@
+{
+  "id": "frontend-design-guide",
+  "name": "frontend-design-guide",
+  "version": "0.1.0",
+  "description": "前端设计技能：为当前项目沉淀 UI 设计、交互状态、视觉一致性和组件复用规则。",
+  "category": "design",
+  "recommended": false,
+  "target": ".claude/skills/frontend-design-guide",
+  "files": [
+    {
+      "from": "SKILL.md",
+      "to": "SKILL.md",
+      "mode": "copy"
+    }
+  ]
+}
