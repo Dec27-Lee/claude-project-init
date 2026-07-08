@@ -5,6 +5,7 @@
 ## 组成
 
 ```text
+skills/list/SKILL.md          # 可安装技能清单入口
 skills/init/SKILL.md          # 用户调用入口
 skills/audit/SKILL.md         # 只读检查入口
 bin/claude-project-init.mjs   # 确定性安装 CLI
@@ -29,15 +30,16 @@ Skill 负责交互和决策，CLI 负责确定性执行。
 
 ## 执行流程
 
-1. 用户调用 `/claude-project-init:init`。
-2. Skill 调用 `claude-project-init list` 展示核心初始化项和可选 pack。
-3. 用户选择 preset 或 pack 列表。
-4. CLI 对所选 pack 做依赖闭包解析，例如 `thinking-distiller` 会自动带入 `clear-thinking`。
-5. Skill 调用 `claude-project-init plan --target <path> ...`。
+1. 用户可先调用 `/claude-project-init:list` 查看核心初始化项、可选 pack、presets 和 Git 可见性策略。
+2. 用户调用 `/claude-project-init:init`。
+3. Skill 调用 `claude-project-init list` 展示核心初始化项和可选 pack。
+4. 用户选择 preset 或 pack 列表。
+5. CLI 对所选 pack 做依赖闭包解析，例如 `thinking-distiller` 会自动带入 `clear-thinking`。
+6. Skill 调用 `claude-project-init plan --target <path> ...`。
    - 如果只想根据已有 `.claude/skills` 初始化/刷新 `CLAUDE.md` 和 `.claude/workspace-index.md`，使用 `--no-packs`。
-6. Skill 展示 plan，等待用户确认。
-7. 用户确认后，Skill 调用 `claude-project-init apply --target <path> ... --yes`。
-8. CLI 写入目标工作区并生成 lock 文件。
+7. Skill 展示 plan，等待用户确认。
+8. 用户确认后，Skill 调用 `claude-project-init apply --target <path> ... --yes`。
+9. CLI 写入目标工作区并生成 lock 文件。
 
 ## 核心初始化项
 

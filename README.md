@@ -27,13 +27,33 @@
 /reload-plugins
 ```
 
-安装后使用：
+安装后先查看可安装技能清单：
+
+```text
+/claude-project-init:list
+```
+
+然后执行初始化：
 
 ```text
 /claude-project-init:init
 ```
 
 ## 插件命令
+
+### 查看可安装技能清单
+
+```text
+/claude-project-init:list
+```
+
+该技能只读展示：
+
+- 核心初始化项
+- 可安装 workspace skill packs
+- presets
+- Git 可见性策略
+- 下一步初始化建议
 
 ### 初始化工作区
 
@@ -43,8 +63,8 @@
 
 该技能会：
 
-1. 展示可安装 workspace skill packs
-2. 让用户选择推荐组合、思考实验室组合、全部安装或手动选择
+1. 展示可安装 workspace skill packs；如果用户只是想查看清单，应引导使用 `/claude-project-init:list`
+2. 让用户选择推荐组合、思考实验室组合、全部安装或手动选择具体 packs
 3. 选择 Git 可见性策略，判断初始化产物适合本地保留还是共享提交
 4. 先生成 dry-run 计划
 5. 用户确认后再写入目标工作区
@@ -156,7 +176,7 @@ claude-project-init apply --target . --recommended --git-policy source-repo --wr
 
 `--write-git-exclude` 只写本地 `.git/info/exclude`，不会修改仓库 `.gitignore`，也不会提交任何 Git 变更。
 
-如果更新插件后仍看不到 Git 策略选择，请确认安装版本至少为 `0.1.1`，然后执行 `/reload-plugins` 后重新调用 `/claude-project-init:init`。
+如果更新插件后仍看不到 Git 策略选择或清单入口，请确认安装版本至少为 `0.1.2`，然后执行 `/reload-plugins` 后重新调用 `/claude-project-init:list` 或 `/claude-project-init:init`。
 
 ## 目标工作区生成结构
 
@@ -235,7 +255,9 @@ claude-project-init/
 ├── skills/
 │   ├── audit/
 │   │   └── SKILL.md
-│   └── init/
+│   ├── init/
+│   │   └── SKILL.md
+│   └── list/
 │       └── SKILL.md
 ├── package.json
 └── README.md

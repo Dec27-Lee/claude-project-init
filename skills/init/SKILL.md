@@ -10,7 +10,17 @@ argument-hint: "[target path] [recommended|thinking-lab|all|手动选择]"
 
 ## 目标
 
-帮助用户在目标工作区安装 workspace skills，并安全初始化：
+帮助用户在目标工作区安装 workspace skills，并安全初始化。
+
+如果用户只是想先看“插件里可以安装哪些技能”或“有哪些 pack 可选”，不要直接进入初始化写入流程，应先引导使用：
+
+```text
+/claude-project-init:list
+```
+
+本技能用于用户已经准备选择 packs、生成 plan 并初始化工作区的场景。
+
+安全初始化内容包括：
 
 - `.claude/skills/<skill>/SKILL.md`
 - `.claude/skills/INDEX.md`
@@ -39,6 +49,12 @@ argument-hint: "[target path] [recommended|thinking-lab|all|手动选择]"
 14. 如果 plan 显示冲突，不要强行覆盖；让用户先处理冲突或减少选择的 pack。
 
 ## 可用命令
+
+插件还提供只读清单入口：
+
+```text
+/claude-project-init:list
+```
 
 插件提供 CLI：
 

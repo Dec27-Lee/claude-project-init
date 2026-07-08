@@ -57,9 +57,10 @@ node bin/claude-project-init.mjs apply --target .tmp/demo-workspace --preset thi
 claude --plugin-dir .
 ```
 
-进入 Claude Code 后执行：
+进入 Claude Code 后先查看清单，再执行初始化：
 
 ```text
+/claude-project-init:list
 /claude-project-init:init
 ```
 
