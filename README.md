@@ -6,7 +6,7 @@
 
 - 让用户选择要安装到当前工作区的 skills
 - 将所选 skills 写入目标工作区 `.claude/skills/`
-- 支持复制完整技能资源目录，例如 `clear-thinking/resources/`
+- 支持复制完整技能资源目录，例如 `clear-thinking/resources/`、`gpt-image/resources/`
 - 根据 pack 依赖自动补齐必需技能，例如选择 `thinking-distiller` 时自动带入 `clear-thinking`
 - 生成或合并 `CLAUDE.md`
 - 生成或合并 `.claude/settings.json`
@@ -98,6 +98,7 @@
 | `work-journal` | 是 | 工作日志：记录需求、过程、决策、验证和完成检查；初始化 `local/work-journal/` |
 | `clear-thinking` | 是 | 复杂判断与规划：目标不清、多目标冲突、方案取舍和复盘；包含完整 `resources/` 微技能资源 |
 | `thinking-distiller` | 否 | 方法蒸馏：把书籍、文章、演讲、访谈或研究资料提炼为 clear-thinking 可复用判断动作；依赖 `clear-thinking` |
+| `gpt-image` | 否 | 本地生图：通过用户配置的 OpenAI-compatible 图片接口调用 `gpt-image-2`，生成 PPT 配图、封面图、产品插画和概念视觉 |
 
 ## CLI
 
@@ -111,6 +112,8 @@ claude-project-init plan --target . --all
 claude-project-init plan --target . --no-packs
 claude-project-init plan --target . --packs work-journal,clear-thinking
 claude-project-init plan --target . --packs thinking-distiller
+claude-project-init plan --target . --packs gpt-image
+claude-project-init plan --target . --preset image-lab
 claude-project-init plan --target . --recommended --require-git-policy
 claude-project-init plan --target . --recommended --git-policy source-repo
 claude-project-init apply --target . --preset thinking-lab --git-policy public-repo --write-git-exclude --yes
@@ -129,8 +132,11 @@ node bin/claude-project-init.mjs plan --target . --recommended
 | --- | --- |
 | `recommended` | `work-journal`, `clear-thinking` |
 | `thinking-lab` | `work-journal`, `clear-thinking`, `thinking-distiller` |
+| `image-lab` | `gpt-image` |
 
 > 依赖会自动补齐：如果手动只选择 `thinking-distiller`，plan 中也会出现 `clear-thinking`，并标记为 `selectionReason: "dependency"`。
+>
+> `gpt-image` 涉及外部图片接口、凭证和可能的调用费用，因此不进入 `recommended`；需要时可手动选择或使用 `image-lab` preset。
 
 ## 安全策略
 
@@ -176,11 +182,11 @@ claude-project-init apply --target . --recommended --git-policy source-repo --wr
 
 `--write-git-exclude` 只写本地 `.git/info/exclude`，不会修改仓库 `.gitignore`，也不会提交任何 Git 变更。
 
-如果更新插件后仍看不到 Git 策略选择或清单入口，请确认安装版本至少为 `0.1.2`，然后执行 `/reload-plugins` 后重新调用 `/claude-project-init:list` 或 `/claude-project-init:init`。
+如果更新插件后仍看不到 Git 策略选择、清单入口或 `gpt-image` pack，请确认安装版本至少为 `0.1.3`，然后执行 `/reload-plugins` 后重新调用 `/claude-project-init:list` 或 `/claude-project-init:init`。
 
 ## 目标工作区生成结构
 
-以 `thinking-lab` preset 为例，执行初始化后，目标工作区可能生成：
+以安装 `thinking-lab` 并额外选择 `gpt-image` 为例，执行初始化后，目标工作区可能生成：
 
 ```text
 <workspace>/
@@ -207,9 +213,13 @@ claude-project-init apply --target . --recommended --git-policy source-repo --wr
         ├── clear-thinking/
         │   ├── SKILL.md
         │   └── resources/
-        └── thinking-distiller/
+        ├── thinking-distiller/
+        │   ├── SKILL.md
+        │   └── resources/
+        └── gpt-image/
             ├── SKILL.md
             └── resources/
+                └── gpt-image-generate.ps1
 ```
 
 这棵树表示目标工作区的初始化结果。如果目标工作区本身是插件或 skill 源码仓库，例如本仓库，生成的 `.claude/`、`local/`、`CLAUDE.md` 通常只是本地 dogfood 产物，不应和 `resources/packs/`、`skills/` 等源码一起提交。
@@ -265,7 +275,7 @@ claude-project-init/
 
 ## 维护方向
 
-- 按需增加更多可选 skill packs。
+- 按需增加更多可选 skill packs，例如更多媒体生成或研发辅助技能。
 - hooks 资源默认仅复制，不自动启用；启用前应由用户审查并手动合并 settings。
 - 继续保持 plan-first、无网络、无依赖安装、无自动提交 Git 的保守初始化策略。
 - 发布通过 `Dec27-Lee/claude-plugins-vault` 统一 marketplace 分发。

@@ -1,6 +1,6 @@
 {
   "name": "claude-project-init",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "为新工作区交互式安装 workspace skills，并初始化 CLAUDE.md、.claude/workspace-index.md 和 Claude Code 项目配置。",
   "type": "module",
   "private": true,
@@ -10,7 +10,7 @@
   "scripts": {
     "list": "node bin/claude-project-init.mjs list",
     "validate": "node scripts/validate-plugin.mjs",
-    "test:smoke": "node scripts/validate-plugin.mjs && node bin/claude-project-init.mjs list && node bin/claude-project-init.mjs plan --target . --recommended && node bin/claude-project-init.mjs plan --target . --preset thinking-lab && node bin/claude-project-init.mjs plan --target . --recommended --git-policy source-repo --json && node bin/claude-project-init.mjs plan --target . --recommended --git-policy team-shared --json && node bin/claude-project-init.mjs plan --target . --recommended --require-git-policy --git-policy source-repo --json"
+    "test:smoke": "node scripts/validate-plugin.mjs && node bin/claude-project-init.mjs list && node bin/claude-project-init.mjs plan --target . --recommended && node bin/claude-project-init.mjs plan --target . --preset thinking-lab && node bin/claude-project-init.mjs plan --target . --preset image-lab && node bin/claude-project-init.mjs plan --target . --packs gpt-image --git-policy source-repo --json && node bin/claude-project-init.mjs plan --target . --recommended --git-policy source-repo --json && node bin/claude-project-init.mjs plan --target . --recommended --git-policy team-shared --json && node bin/claude-project-init.mjs plan --target . --recommended --require-git-policy --git-policy source-repo --json"
   },
   "keywords": [
     "claude-code",

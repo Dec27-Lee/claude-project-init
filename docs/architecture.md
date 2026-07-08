@@ -10,7 +10,7 @@ skills/init/SKILL.md          # 用户调用入口
 skills/audit/SKILL.md         # 只读检查入口
 bin/claude-project-init.mjs   # 确定性安装 CLI
 resources/manifest.json       # skill pack 清单和 presets
-resources/packs/*             # 可安装的 workspace skills
+resources/packs/*             # 可安装的 workspace skills，例如 work-journal、clear-thinking、thinking-distiller、gpt-image
 resources/templates/*         # CLAUDE.md / settings / index 模板
 ```
 
@@ -37,6 +37,7 @@ Skill 负责交互和决策，CLI 负责确定性执行。
 5. CLI 对所选 pack 做依赖闭包解析，例如 `thinking-distiller` 会自动带入 `clear-thinking`。
 6. Skill 调用 `claude-project-init plan --target <path> ...`。
    - 如果只想根据已有 `.claude/skills` 初始化/刷新 `CLAUDE.md` 和 `.claude/workspace-index.md`，使用 `--no-packs`。
+   - 如果只想安装本地生图能力，可使用 `--preset image-lab` 或 `--packs gpt-image`。
 7. Skill 展示 plan，等待用户确认。
 8. 用户确认后，Skill 调用 `claude-project-init apply --target <path> ... --yes`。
 9. CLI 写入目标工作区并生成 lock 文件。
@@ -77,6 +78,7 @@ CLI 不会：
 - 在未显式传入 `--write-git-exclude` 时修改 `.git/info/exclude`
 - 覆盖已有不同内容的 skill 文件
 - 覆盖 `initFiles` 指向的用户长期数据
+- 在安装 `gpt-image` 等可选外部能力时自动调用网络接口或写入凭证
 
 如果发现同名 skill 文件存在且内容不同，plan 会标记 conflict，apply 会拒绝执行。`initFiles` 的目标已存在但内容不同，则按 `create-if-missing` 语义跳过并保留用户内容。
 

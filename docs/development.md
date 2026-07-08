@@ -18,13 +18,17 @@ node bin/claude-project-init.mjs list --json
 ```bash
 node bin/claude-project-init.mjs plan --target . --recommended
 node bin/claude-project-init.mjs plan --target . --preset thinking-lab
+node bin/claude-project-init.mjs plan --target . --preset image-lab
 node bin/claude-project-init.mjs plan --target . --packs thinking-distiller
+node bin/claude-project-init.mjs plan --target . --packs gpt-image --git-policy source-repo --json
 node bin/claude-project-init.mjs plan --target . --recommended --require-git-policy
 node bin/claude-project-init.mjs plan --target . --recommended --git-policy source-repo
 node bin/claude-project-init.mjs plan --target . --no-packs
 ```
 
 `thinking-distiller` 依赖 `clear-thinking`；即使只传 `--packs thinking-distiller`，plan 也会自动带入 `clear-thinking`，并在 JSON 中标记 `selectionReason: "dependency"`。
+
+`gpt-image` 是可选生图 pack，不进入 recommended；可通过 `--packs gpt-image`、`--preset image-lab` 或 `--all` 覆盖。
 
 ## 在临时目录测试 apply
 
@@ -169,6 +173,7 @@ README.md
 node scripts/validate-plugin.mjs
 node bin/claude-project-init.mjs list --json
 node bin/claude-project-init.mjs plan --target .tmp/demo-workspace --all --json
+node bin/claude-project-init.mjs plan --target . --packs gpt-image --git-policy source-repo --json
 node bin/claude-project-init.mjs plan --target . --recommended --git-policy source-repo --json
 node bin/claude-project-init.mjs plan --target . --recommended --git-policy team-shared --json
 node bin/claude-project-init.mjs plan --target . --recommended --require-git-policy --git-policy source-repo --json

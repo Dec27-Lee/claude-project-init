@@ -83,6 +83,8 @@ function usage() {
   claude-project-init list
   claude-project-init plan --target . --recommended
   claude-project-init plan --target . --preset thinking-lab
+  claude-project-init plan --target . --preset image-lab
+  claude-project-init plan --target . --packs gpt-image
   claude-project-init apply --target . --packs work-journal,clear-thinking --yes
 `);
 }

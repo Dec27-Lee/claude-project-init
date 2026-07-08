@@ -11,6 +11,9 @@
       "work-journal",
       "clear-thinking",
       "thinking-distiller"
+    ],
+    "image-lab": [
+      "gpt-image"
     ]
   },
   "packs": [
@@ -27,6 +30,11 @@
     {
       "id": "thinking-distiller",
       "path": "packs/thinking-distiller",
+      "recommended": false
+    },
+    {
+      "id": "gpt-image",
+      "path": "packs/gpt-image",
       "recommended": false
     }
   ],

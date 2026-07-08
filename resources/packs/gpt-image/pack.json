@@ -1,0 +1,45 @@
+{
+  "id": "gpt-image",
+  "name": "gpt-image",
+  "version": "1.1.0",
+  "description": "本地生图技能：通过用户配置的 OpenAI-compatible 图片接口调用 gpt-image-2，生成 PPT 配图、封面图、产品插画和概念视觉，并保存到工作区文件。",
+  "category": "media-generation",
+  "recommended": false,
+  "target": ".claude/skills/gpt-image",
+  "files": [
+    {
+      "from": "SKILL.md",
+      "to": "SKILL.md",
+      "mode": "copy"
+    },
+    {
+      "from": "resources",
+      "to": "resources",
+      "mode": "copy",
+      "type": "directory",
+      "exclude": [
+        "**/.state/**",
+        "**/__pycache__/**",
+        "**/*.pyc",
+        "**/.tmp/**"
+      ]
+    }
+  ],
+  "workspaceIndexEntries": {
+    "assets": [
+      {
+        "path": ".claude/skills/gpt-image/SKILL.md",
+        "purpose": "gpt-image 技能入口；把图片需求整理为提示词并调用本地脚本生成图片"
+      },
+      {
+        "path": ".claude/skills/gpt-image/resources/gpt-image-generate.ps1",
+        "purpose": "gpt-image OpenAI-compatible 图片接口调用脚本；仅在用户实际要求生图时执行"
+      }
+    ]
+  },
+  "postInstallNotes": [
+    "gpt-image 是可选生图技能；安装时只复制技能和脚本，不会访问网络。",
+    "实际生图前需要配置 GPT_IMAGE_BASE_URL/GPT_IMAGE_API_KEY 或 OPENAI_BASE_URL/OPENAI_API_KEY。",
+    "不要在回复或日志中打印 token、key 或 Authorization 头。"
+  ]
+}

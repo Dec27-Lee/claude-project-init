@@ -1,7 +1,7 @@
 ---
 description: 初始化当前或指定工作区的 Claude Code 项目配置。让用户选择要安装的 workspace skills 和 Git 可见性策略，并生成或合并 CLAUDE.md、.claude/settings.json、.claude/skills/INDEX.md、.claude/workspace-index.md 和技能声明的 local 初始化文件。仅在用户明确要求初始化项目、安装工作区技能或执行 project init 时使用。
 disable-model-invocation: true
-argument-hint: "[target path] [recommended|thinking-lab|all|手动选择]"
+argument-hint: "[target path] [recommended|thinking-lab|image-lab|all|手动选择]"
 ---
 
 # claude-project-init:init
@@ -62,10 +62,12 @@ argument-hint: "[target path] [recommended|thinking-lab|all|手动选择]"
 claude-project-init list
 claude-project-init plan --target <path> --recommended
 claude-project-init plan --target <path> --preset thinking-lab
+claude-project-init plan --target <path> --preset image-lab
 claude-project-init plan --target <path> --all
 claude-project-init plan --target <path> --no-packs
 claude-project-init plan --target <path> --packs work-journal,clear-thinking
 claude-project-init plan --target <path> --packs thinking-distiller
+claude-project-init plan --target <path> --packs gpt-image
 claude-project-init plan --target <path> --recommended --require-git-policy
 claude-project-init plan --target <path> --recommended --git-policy source-repo
 claude-project-init apply --target <path> --packs thinking-distiller --git-policy public-repo --write-git-exclude --yes
@@ -86,8 +88,9 @@ node bin/claude-project-init.mjs list
 3. 根据用户需求选择：
    - `recommended`：推荐组合
    - `thinking-lab`：思考方法沉淀组合，包含 `thinking-distiller`
+   - `image-lab`：本地生图组合，包含 `gpt-image`
    - `all`：全部技能
-   - 手动选择：让用户多选 pack id；如选择 `thinking-distiller`，CLI 会自动补齐依赖 `clear-thinking`
+   - 手动选择：让用户多选 pack id；如选择 `thinking-distiller`，CLI 会自动补齐依赖 `clear-thinking`；如选择 `gpt-image`，应提醒用户实际调用生图时需要配置图片接口凭证并可能产生费用
    - `--no-packs`：不安装新技能，只根据当前 `.claude/skills`、`CLAUDE.md` 和长期资料入口初始化/刷新 `CLAUDE.md` 与 `.claude/workspace-index.md`
 4. 明确询问用户选择 Git 可见性策略，不要跳过这一步：
    - `local-only`：个人本地，初始化产物不提交
