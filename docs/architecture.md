@@ -51,6 +51,17 @@ Skill 负责交互和决策，CLI 负责确定性执行。
 
 pack 的 `workspaceIndexEntries` 只负责向 `.claude/workspace-index.md` 补充二级索引或资源入口，例如 `local/work-journal/index.md` 或 `.claude/skills/clear-thinking/resources/`。
 
+## Git 可见性策略
+
+`CLAUDE.md`、`.claude/` 和 `local/` 是否应该提交，不由 pack 决定，而由目标工作区的 Git 可见性策略决定。CLI 支持：
+
+- `local-only`：个人本地使用，初始化产物只本地保留。
+- `public-repo`：公开仓库，`CLAUDE.md` 需审查后才提交，`.claude/` 和 `local/` 默认本地保留。
+- `team-shared`：私有团队共享，可提交团队确认的 Claude 配置和 workspace skills，但排除 records、sessions、worktrees、state 等运行态内容。
+- `source-repo`：插件或 skill 源码仓库，初始化结果通常只是 dogfood 产物，不应和 `resources/packs/`、`skills/` 源码重复提交。
+
+Git 可见性策略是横切策略，不属于某个 pack。默认只在 plan 中提示；只有用户显式传入 `--write-git-exclude` 时，apply 才写入本地 `.git/info/exclude`。CLI 不自动修改仓库 `.gitignore`，也不执行 Git 命令。
+
 ## 安全边界
 
 CLI 不会：
@@ -60,6 +71,8 @@ CLI 不会：
 - 安装依赖
 - 执行目标项目命令
 - 自动提交 Git
+- 自动修改仓库 `.gitignore`
+- 在未显式传入 `--write-git-exclude` 时修改 `.git/info/exclude`
 - 覆盖已有不同内容的 skill 文件
 - 覆盖 `initFiles` 指向的用户长期数据
 

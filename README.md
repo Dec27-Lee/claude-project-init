@@ -43,9 +43,10 @@
 该技能会：
 
 1. 展示可安装 workspace skill packs
-2. 让用户选择推荐组合、最小组合、思考实验室组合、设计组合、全部安装或手动选择
-3. 先生成 dry-run 计划
-4. 用户确认后再写入目标工作区
+2. 让用户选择推荐组合、思考实验室组合、全部安装或手动选择
+3. 选择 Git 可见性策略，判断初始化产物适合本地保留还是共享提交
+4. 先生成 dry-run 计划
+5. 用户确认后再写入目标工作区
 
 ### 检查初始化状态
 
@@ -89,7 +90,8 @@ claude-project-init plan --target . --all
 claude-project-init plan --target . --no-packs
 claude-project-init plan --target . --packs work-journal,clear-thinking
 claude-project-init plan --target . --packs thinking-distiller
-claude-project-init apply --target . --preset thinking-lab --yes
+claude-project-init plan --target . --recommended --git-policy source-repo
+claude-project-init apply --target . --preset thinking-lab --git-policy public-repo --write-git-exclude --yes
 ```
 
 开发时可直接使用 Node：
@@ -119,12 +121,35 @@ node bin/claude-project-init.mjs plan --target . --recommended
 - 不访问网络
 - 不执行项目命令
 - 不提交 Git
+- 默认不修改 `.gitignore`
+- 只有显式传入 `--write-git-exclude` 时，才写入目标仓库本地 `.git/info/exclude`
+- `.git/info/exclude` 只影响本机未跟踪文件；已被 Git 跟踪的文件不会因此自动取消跟踪
 - 不覆盖已有不同内容的 skill 文件
 - `initFiles` 使用 `create-if-missing`，保留用户已有长期数据
 - 目录资源递归复制时使用二进制安全复制，并跳过 `.state`、`__pycache__`、`records`、`.tmp`、`.claude/worktrees` 等运行态或历史目录
 - `CLAUDE.md` 和索引文件只更新受控块
 - `.claude/settings.json` 只做保守初始化和 `$schema` 补齐
 - 目标路径如包含符号链接或 junction，会拒绝写入
+
+## Git 可见性策略
+
+初始化会生成 `CLAUDE.md`、`.claude/`、`local/` 等工作区文件。它们是否应该提交到仓库，取决于工作区性质。CLI 支持 `--git-policy` 给出 plan 提示，并可在用户显式要求时写入本地 `.git/info/exclude`。
+
+| 策略 | 适用场景 | 提交建议 | 本地 exclude 建议 |
+| --- | --- | --- | --- |
+| `local-only` | 个人本地工作区 | `CLAUDE.md`、`.claude/`、`local/` 都只本地保留 | `/CLAUDE.md`、`/.claude/`、`/local/` |
+| `public-repo` | 公开仓库 | `CLAUDE.md` 审查后可提交；`.claude/`、`local/` 默认不提交 | `/.claude/`、`/local/` |
+| `team-shared` | 私有团队仓库 | 可共享团队确认的 `CLAUDE.md`、`.claude/settings.json`、workspace skills 和索引 | 排除 records、sessions、worktrees、state 等运行态内容 |
+| `source-repo` | 插件或 skill 源码仓库 | 不提交 dogfood 生成的 `CLAUDE.md`、`.claude/`、`local/`；需要公开贡献规则时单独整理 | `/CLAUDE.md`、`/.claude/`、`/local/` |
+
+示例：
+
+```bash
+claude-project-init plan --target . --recommended --git-policy source-repo
+claude-project-init apply --target . --recommended --git-policy source-repo --write-git-exclude --yes
+```
+
+`--write-git-exclude` 只写本地 `.git/info/exclude`，不会修改仓库 `.gitignore`，也不会提交任何 Git 变更。
 
 ## 目标工作区生成结构
 
@@ -159,6 +184,8 @@ node bin/claude-project-init.mjs plan --target . --recommended
             ├── SKILL.md
             └── resources/
 ```
+
+这棵树表示目标工作区的初始化结果。如果目标工作区本身是插件或 skill 源码仓库，例如本仓库，生成的 `.claude/`、`local/`、`CLAUDE.md` 通常只是本地 dogfood 产物，不应和 `resources/packs/`、`skills/` 等源码一起提交。
 
 ## 开发
 

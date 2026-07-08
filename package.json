@@ -10,7 +10,7 @@
   "scripts": {
     "list": "node bin/claude-project-init.mjs list",
     "validate": "node scripts/validate-plugin.mjs",
-    "test:smoke": "node scripts/validate-plugin.mjs && node bin/claude-project-init.mjs list && node bin/claude-project-init.mjs plan --target . --recommended && node bin/claude-project-init.mjs plan --target . --preset thinking-lab"
+    "test:smoke": "node scripts/validate-plugin.mjs && node bin/claude-project-init.mjs list && node bin/claude-project-init.mjs plan --target . --recommended && node bin/claude-project-init.mjs plan --target . --preset thinking-lab && node bin/claude-project-init.mjs plan --target . --recommended --git-policy source-repo --json && node bin/claude-project-init.mjs plan --target . --recommended --git-policy team-shared --json"
   },
   "keywords": [
     "claude-code",

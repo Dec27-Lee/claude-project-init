@@ -19,13 +19,65 @@ const DEFAULT_EXCLUDES = [
   '**/.DS_Store',
 ];
 
+const GIT_POLICIES = {
+  'local-only': {
+    label: '本地私用',
+    description: '初始化产物只服务当前本地工作区，不建议提交到仓库。',
+    excludes: ['/CLAUDE.md', '/.claude/', '/local/'],
+    recommendations: [
+      { path: 'CLAUDE.md', visibility: 'local', guidance: '本地协作规则；如需公开，请单独整理公开版后再提交。' },
+      { path: '.claude/', visibility: 'local', guidance: '本地 Claude Code 工作区状态和安装后的 workspace skills，不建议提交。' },
+      { path: 'local/', visibility: 'local', guidance: '本地长期记录和过程资料入口，不建议提交。' },
+    ],
+  },
+  'public-repo': {
+    label: '公开仓库',
+    description: '公开仓库默认只共享经审查的协作说明，不发布本地技能安装态和长期记录。',
+    excludes: ['/.claude/', '/local/'],
+    recommendations: [
+      { path: 'CLAUDE.md', visibility: 'review', guidance: '可提交公开版，但应先审查是否包含个人偏好、内部流程或不适合外部贡献者的规则。' },
+      { path: '.claude/', visibility: 'local', guidance: '本地 workspace skills、settings 和 lock 默认不提交；需要共享时改用 team-shared 策略。' },
+      { path: 'local/', visibility: 'local', guidance: '本地记录、日志和过程资料不提交。' },
+    ],
+  },
+  'team-shared': {
+    label: '团队共享',
+    description: '私有团队仓库可共享经团队确认的 Claude Code 配置和 workspace skills，但仍忽略运行态记录。',
+    excludes: [
+      '/.claude/local/',
+      '/.claude/settings.local.json',
+      '/.claude/worktrees/',
+      '/.claude/skills/*/resources/.state/',
+      '/local/work-journal/records/*',
+      '!/local/work-journal/records/.gitkeep',
+      '/local/thinking-distiller/sessions/*',
+      '!/local/thinking-distiller/sessions/.gitkeep',
+    ],
+    recommendations: [
+      { path: 'CLAUDE.md', visibility: 'shared', guidance: '可作为团队协作规则提交。' },
+      { path: '.claude/', visibility: 'shared', guidance: '可提交团队确认的 settings、skills 和索引；不要提交 worktrees 或运行态缓存。' },
+      { path: 'local/', visibility: 'mixed', guidance: '可提交索引和占位文件，不提交真实日志、sessions 和个人过程资料。' },
+    ],
+  },
+  'source-repo': {
+    label: '插件/技能源码仓库',
+    description: '当前仓库本身维护插件或 skill 源码，初始化产物通常只是 dogfood 结果，不应和源码重复提交。',
+    excludes: ['/CLAUDE.md', '/.claude/', '/local/'],
+    recommendations: [
+      { path: 'CLAUDE.md', visibility: 'curate', guidance: '默认本地保留；如需支持二次开发者，应手工整理成公开贡献者版后再提交。' },
+      { path: '.claude/', visibility: 'local', guidance: '安装后的 workspace skills 会和 resources/packs 或源码重复，建议只本地保留。' },
+      { path: 'local/', visibility: 'local', guidance: 'dogfood 过程记录和本地长期资料不提交。' },
+    ],
+  },
+};
+
 function usage() {
   console.log(`claude-project-init
 
 用法：
   claude-project-init list [--json]
-  claude-project-init plan --target <path> [--packs a,b | --preset name | --recommended | --all | --no-packs] [--json]
-  claude-project-init apply --target <path> [--packs a,b | --preset name | --recommended | --all | --no-packs] [--yes] [--json]
+  claude-project-init plan --target <path> [--packs a,b | --preset name | --recommended | --all | --no-packs] [--git-policy local-only|public-repo|team-shared|source-repo] [--write-git-exclude] [--json]
+  claude-project-init apply --target <path> [--packs a,b | --preset name | --recommended | --all | --no-packs] [--git-policy local-only|public-repo|team-shared|source-repo] [--write-git-exclude] [--yes] [--json]
 
 示例：
   claude-project-init list
@@ -37,6 +89,8 @@ function usage() {
 
 function parseArgs(argv) {
   const args = { _: [] };
+  const booleanFlags = new Set(['json', 'recommended', 'all', 'yes', 'help', 'no-packs', 'write-git-exclude']);
+  const valueFlags = new Set(['target', 'packs', 'preset', 'git-policy']);
   for (let i = 0; i < argv.length; i += 1) {
     const token = argv[i];
     if (!token.startsWith('--')) {
@@ -44,9 +98,12 @@ function parseArgs(argv) {
       continue;
     }
     const key = token.slice(2);
-    if (['json', 'recommended', 'all', 'yes', 'help', 'no-packs'].includes(key)) {
+    if (booleanFlags.has(key)) {
       args[key] = true;
       continue;
+    }
+    if (!valueFlags.has(key)) {
+      throw new Error(`未知参数：--${key}`);
     }
     const value = argv[i + 1];
     if (!value || value.startsWith('--')) {
@@ -169,6 +226,108 @@ function resolveTarget(targetArg) {
     throw new Error(`目标不是普通目录：${target}`);
   }
   return target;
+}
+
+function detectDefaultGitPolicy(target) {
+  const pluginJson = path.join(target, '.claude-plugin', 'plugin.json');
+  const resourceManifest = path.join(target, 'resources', 'manifest.json');
+  if (fs.existsSync(pluginJson) || fs.existsSync(resourceManifest)) {
+    return 'source-repo';
+  }
+  return 'local-only';
+}
+
+function resolveGitPolicy(target, policyName) {
+  const name = policyName || detectDefaultGitPolicy(target);
+  const policy = GIT_POLICIES[name];
+  if (!policy) {
+    throw new Error(`未知 git policy：${name}。可用值：${Object.keys(GIT_POLICIES).join(', ')}`);
+  }
+  return { name, inferred: !policyName, ...policy };
+}
+
+function findGitRoot(start) {
+  let current = path.resolve(start);
+  while (true) {
+    const gitPath = path.join(current, '.git');
+    if (fs.existsSync(gitPath) && fs.lstatSync(gitPath).isDirectory()) {
+      return current;
+    }
+    const parent = path.dirname(current);
+    if (parent === current) {
+      return null;
+    }
+    current = parent;
+  }
+}
+
+function gitExcludePatternForTarget(gitRoot, target, pattern) {
+  const negated = pattern.startsWith('!');
+  const rawPattern = negated ? pattern.slice(1) : pattern;
+  const normalizedPattern = normalizeSlashes(rawPattern).replace(/^\/+/, '');
+  const targetRelative = normalizeSlashes(path.relative(gitRoot, target));
+  const scoped = targetRelative ? `/${targetRelative}/${normalizedPattern}` : `/${normalizedPattern}`;
+  return negated ? `!${scoped}` : scoped;
+}
+
+function gitExcludeBlock(gitPolicy) {
+  return [
+    '# claude-project-init:git-visibility:start',
+    `# policy: ${gitPolicy.name} - ${gitPolicy.label}`,
+    ...gitPolicy.excludePatterns,
+    '# claude-project-init:git-visibility:end',
+  ].join('\n');
+}
+
+function gitPolicyPlan(target, policy, writeGitExclude) {
+  const gitRoot = findGitRoot(target);
+  const patterns = gitRoot
+    ? policy.excludes.map((pattern) => gitExcludePatternForTarget(gitRoot, target, pattern))
+    : [];
+  return {
+    name: policy.name,
+    label: policy.label,
+    inferred: policy.inferred,
+    description: policy.description,
+    recommendations: policy.recommendations,
+    gitRoot,
+    excludeFile: gitRoot ? relativeToTarget(target, path.join(gitRoot, '.git', 'info', 'exclude')) : null,
+    excludePatterns: patterns,
+    writeGitExclude: Boolean(writeGitExclude),
+  };
+}
+
+function writeGitInfoExclude(target, gitPolicy) {
+  if (!gitPolicy.writeGitExclude) {
+    return false;
+  }
+  if (!gitPolicy.gitRoot) {
+    throw new Error('未找到 Git 仓库，无法写入 .git/info/exclude');
+  }
+  const excludeFile = path.join(gitPolicy.gitRoot, '.git', 'info', 'exclude');
+  fs.mkdirSync(path.dirname(excludeFile), { recursive: true });
+  const existing = fs.existsSync(excludeFile) ? readText(excludeFile) : '';
+  const block = gitExcludeBlock(gitPolicy);
+  let next;
+  const markerState = validateControlledBlockMarkers(
+    existing,
+    '# claude-project-init:git-visibility:start',
+    '# claude-project-init:git-visibility:end',
+  );
+  if (!markerState.ok) {
+    throw new Error(`.git/info/exclude 中的 claude-project-init marker 异常：${markerState.reason}`);
+  }
+  if (markerState.hasBlock) {
+    next = upsertBlock(existing, '# claude-project-init:git-visibility:start', '# claude-project-init:git-visibility:end', block);
+  } else {
+    const prefix = existing && !existing.endsWith('\n') ? '\n' : '';
+    next = `${existing}${prefix}${block}\n`;
+  }
+  if (next === existing) {
+    return false;
+  }
+  writeText(excludeFile, next);
+  return true;
 }
 
 function resolvePackDependencies(manifest, selected) {
@@ -370,10 +529,11 @@ function expandFileEntry(pack, target, fileEntry) {
   };
 }
 
-function buildPlan(target, manifest, packs) {
+function buildPlan(target, manifest, packs, options = {}) {
   const actions = [];
   const conflicts = [];
   const installed = [];
+  const gitPolicy = gitPolicyPlan(target, options.gitPolicy, options.writeGitExclude);
 
   for (const pack of packs) {
     installed.push({ id: pack.id, name: pack.name, version: pack.version, description: pack.description, target: pack.target, dependencies: pack.dependencies || [], selectionReason: pack.selectionReason || 'requested' });
@@ -492,6 +652,29 @@ function buildPlan(target, manifest, packs) {
   ]);
   addWorkspaceFileAction(path.join(target, '.claude', 'project-init.lock.json'), '.claude/project-init.lock.json', 'update', '记录 claude-project-init 安装状态');
 
+  if (gitPolicy.writeGitExclude) {
+    if (gitPolicy.gitRoot) {
+      const excludeFile = path.join(gitPolicy.gitRoot, '.git', 'info', 'exclude');
+      if (fs.existsSync(excludeFile)) {
+        const markerState = validateControlledBlockMarkers(
+          readText(excludeFile),
+          '# claude-project-init:git-visibility:start',
+          '# claude-project-init:git-visibility:end',
+        );
+        if (!markerState.ok) {
+          conflicts.push({ type: 'invalid-git-exclude-markers', path: gitPolicy.excludeFile, reason: markerState.reason });
+        }
+      }
+      actions.push({
+        type: 'update-git-exclude',
+        path: gitPolicy.excludeFile,
+        reason: `按 ${gitPolicy.name} 策略把本地初始化产物写入 .git/info/exclude`,
+      });
+    } else {
+      conflicts.push({ type: 'git-root-not-found', path: '.git/info/exclude', reason: '指定了 --write-git-exclude，但目标目录不在 Git 仓库中' });
+    }
+  }
+
   return {
     target,
     plugin: manifest.plugin,
@@ -499,6 +682,7 @@ function buildPlan(target, manifest, packs) {
     actions,
     conflicts,
     canApply: conflicts.length === 0,
+    gitPolicy,
   };
 }
 
@@ -885,6 +1069,12 @@ function applyPlan(target, packs, plan) {
   const lockData = {
     version: 1,
     plugin: 'claude-project-init',
+    gitVisibility: {
+      policy: plan.gitPolicy.name,
+      writeGitExclude: plan.gitPolicy.writeGitExclude,
+      excludePath: plan.gitPolicy.excludeFile,
+      recommendations: plan.gitPolicy.recommendations,
+    },
     packs: {
       ...existingPacks,
       ...selectedPacks,
@@ -892,6 +1082,7 @@ function applyPlan(target, packs, plan) {
   };
   ensureWritableTargetPath(target, lockFile);
   writeJsonIfChanged(lockFile, lockData);
+  writeGitInfoExclude(target, plan.gitPolicy);
 }
 
 function printList(manifest, asJson) {
@@ -911,8 +1102,13 @@ function printList(manifest, asJson) {
     description: pack.description,
     dependencies: pack.dependencies || [],
   }));
+  const gitPolicies = Object.fromEntries(Object.entries(GIT_POLICIES).map(([name, policy]) => [name, {
+    label: policy.label,
+    description: policy.description,
+    excludes: policy.excludes,
+  }]));
   if (asJson) {
-    console.log(JSON.stringify({ coreInitializers, packs: result, presets: manifest.presets || {} }, null, 2));
+    console.log(JSON.stringify({ coreInitializers, packs: result, presets: manifest.presets || {}, gitPolicies }, null, 2));
     return;
   }
   console.log('核心初始化项：');
@@ -929,6 +1125,10 @@ function printList(manifest, asJson) {
   console.log('\n可用 preset：');
   for (const [name, ids] of Object.entries(manifest.presets || {})) {
     console.log(`- ${name}: ${ids.join(', ')}`);
+  }
+  console.log('\nGit 可见性策略：');
+  for (const [name, policy] of Object.entries(gitPolicies)) {
+    console.log(`- ${name}：${policy.label}，${policy.description}`);
   }
 }
 
@@ -963,6 +1163,27 @@ function printPlan(plan, asJson) {
       console.log(`- ${conflict.type}: ${conflict.path || conflict.source}${pack}${reason}`);
     }
   }
+  if (plan.gitPolicy) {
+    const inferred = plan.gitPolicy.inferred ? '，自动推断' : '';
+    console.log(`\nGit 可见性策略：${plan.gitPolicy.name}（${plan.gitPolicy.label}${inferred}）`);
+    console.log(`说明：${plan.gitPolicy.description}`);
+    for (const item of plan.gitPolicy.recommendations) {
+      console.log(`- ${item.path}：${item.visibility}，${item.guidance}`);
+    }
+    if (plan.gitPolicy.gitRoot) {
+      console.log(`本地 exclude 文件：${plan.gitPolicy.excludeFile}`);
+      if (plan.gitPolicy.writeGitExclude) {
+        console.log('将写入 .git/info/exclude：');
+      } else {
+        console.log('建议写入 .git/info/exclude（传入 --write-git-exclude 后执行）：');
+      }
+      for (const pattern of plan.gitPolicy.excludePatterns) {
+        console.log(`  ${pattern}`);
+      }
+    } else {
+      console.log('未检测到 Git 仓库；不会生成本地 exclude 建议。');
+    }
+  }
   console.log(`\n可执行写入：${plan.canApply ? '是' : '否'}`);
 }
 
@@ -987,7 +1208,8 @@ function main() {
 
   const target = resolveTarget(args.target || process.cwd());
   const packs = selectPacks(manifest, args);
-  const plan = buildPlan(target, manifest, packs);
+  const gitPolicy = resolveGitPolicy(target, args['git-policy']);
+  const plan = buildPlan(target, manifest, packs, { gitPolicy, writeGitExclude: args['write-git-exclude'] });
 
   if (command === 'plan') {
     printPlan(plan, args.json);
@@ -1002,7 +1224,7 @@ function main() {
   applyPlan(target, packs, plan);
   const installed = packs.map((pack) => ({ id: pack.id, selectionReason: pack.selectionReason || 'requested' }));
   if (args.json) {
-    console.log(JSON.stringify({ ok: true, target, installed }, null, 2));
+    console.log(JSON.stringify({ ok: true, target, installed, gitPolicy: plan.gitPolicy }, null, 2));
   } else {
     const requested = installed.filter((pack) => pack.selectionReason !== 'dependency').map((pack) => pack.id);
     const dependencies = installed.filter((pack) => pack.selectionReason === 'dependency').map((pack) => pack.id);
@@ -1011,6 +1233,12 @@ function main() {
     console.log(`安装技能：${requested.join(', ') || '无新增技能'}`);
     if (dependencies.length) {
       console.log(`依赖自动带入：${dependencies.join(', ')}`);
+    }
+    console.log(`Git 可见性策略：${plan.gitPolicy.name}（${plan.gitPolicy.label}）`);
+    if (plan.gitPolicy.writeGitExclude) {
+      console.log(`已按策略更新本地 exclude：${plan.gitPolicy.excludeFile}`);
+    } else if (plan.gitPolicy.excludePatterns.length) {
+      console.log('如不想提交本地初始化产物，可重新执行 plan/apply 时添加 --write-git-exclude，或手动写入 .git/info/exclude。');
     }
     console.log('建议在目标工作区执行 /reload-plugins 或重启 Claude Code。');
   }

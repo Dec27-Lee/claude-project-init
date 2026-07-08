@@ -19,6 +19,7 @@ node bin/claude-project-init.mjs list --json
 node bin/claude-project-init.mjs plan --target . --recommended
 node bin/claude-project-init.mjs plan --target . --preset thinking-lab
 node bin/claude-project-init.mjs plan --target . --packs thinking-distiller
+node bin/claude-project-init.mjs plan --target . --recommended --git-policy source-repo
 node bin/claude-project-init.mjs plan --target . --no-packs
 ```
 
@@ -28,7 +29,7 @@ node bin/claude-project-init.mjs plan --target . --no-packs
 
 ```bash
 mkdir -p .tmp/demo-workspace
-node bin/claude-project-init.mjs apply --target .tmp/demo-workspace --preset thinking-lab --yes
+node bin/claude-project-init.mjs apply --target .tmp/demo-workspace --preset thinking-lab --git-policy local-only --yes
 ```
 
 然后检查：
@@ -46,6 +47,8 @@ node bin/claude-project-init.mjs apply --target .tmp/demo-workspace --preset thi
 ```
 
 重复运行同一条 apply 或 plan，预期资源文件变为 `skip-same` / `sync-dir` 中 `skipSameCount` 增加，`initFiles` 变为 `skip-init-same` 或 `skip-init-existing`，不应覆盖用户已有不同内容。
+
+本仓库本身是插件源码仓库。如在本仓库 dogfood 初始化，请使用 `--git-policy source-repo`；生成的 `CLAUDE.md`、`.claude/`、`local/` 默认不作为源码提交。若要本地防误提交，可显式传入 `--write-git-exclude` 写入 `.git/info/exclude`。
 
 ## 作为 Claude Code 插件测试
 
@@ -164,6 +167,8 @@ README.md
 node scripts/validate-plugin.mjs
 node bin/claude-project-init.mjs list --json
 node bin/claude-project-init.mjs plan --target .tmp/demo-workspace --all --json
+node bin/claude-project-init.mjs plan --target . --recommended --git-policy source-repo --json
+node bin/claude-project-init.mjs plan --target . --recommended --git-policy team-shared --json
 ```
 
 ## 目录资源导入守则

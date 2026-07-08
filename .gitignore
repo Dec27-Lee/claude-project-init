@@ -2,3 +2,8 @@ node_modules/
 .tmp/
 .DS_Store
 *.log
+
+# 本仓库是插件源码仓库；以下为本地 dogfood 初始化产物，不作为插件源码提交。
+CLAUDE.md
+.claude/
+local/
