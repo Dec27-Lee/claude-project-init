@@ -5,27 +5,12 @@
   "presets": {
     "recommended": [
       "work-journal",
-      "clear-thinking",
-      "project-docs",
-      "verify-flow"
-    ],
-    "minimal": [
-      "project-docs",
-      "verify-flow"
-    ],
-    "design": [
-      "work-journal",
-      "clear-thinking",
-      "project-docs",
-      "verify-flow",
-      "frontend-design-guide"
+      "clear-thinking"
     ],
     "thinking-lab": [
       "work-journal",
       "clear-thinking",
-      "thinking-distiller",
-      "project-docs",
-      "verify-flow"
+      "thinking-distiller"
     ]
   },
   "packs": [
@@ -42,21 +27,6 @@
     {
       "id": "thinking-distiller",
       "path": "packs/thinking-distiller",
-      "recommended": false
-    },
-    {
-      "id": "project-docs",
-      "path": "packs/project-docs",
-      "recommended": true
-    },
-    {
-      "id": "verify-flow",
-      "path": "packs/verify-flow",
-      "recommended": true
-    },
-    {
-      "id": "frontend-design-guide",
-      "path": "packs/frontend-design-guide",
       "recommended": false
     }
   ],

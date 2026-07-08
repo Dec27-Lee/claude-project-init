@@ -76,9 +76,6 @@
 | `work-journal` | 是 | 工作日志：记录需求、过程、决策、验证和完成检查；初始化 `local/work-journal/` |
 | `clear-thinking` | 是 | 复杂判断与规划：目标不清、多目标冲突、方案取舍和复盘；包含完整 `resources/` 微技能资源 |
 | `thinking-distiller` | 否 | 方法蒸馏：把书籍、文章、演讲、访谈或研究资料提炼为 clear-thinking 可复用判断动作；依赖 `clear-thinking` |
-| `project-docs` | 是 | 项目文档：维护 CLAUDE.md、项目说明和工作区索引 |
-| `verify-flow` | 是 | 验证流程：推动测试、类型检查、启动验证和结果报告 |
-| `frontend-design-guide` | 否 | 前端设计：页面、组件、交互状态和视觉一致性判断 |
 
 ## CLI
 
@@ -87,8 +84,6 @@
 ```bash
 claude-project-init list
 claude-project-init plan --target . --recommended
-claude-project-init plan --target . --preset minimal
-claude-project-init plan --target . --preset design
 claude-project-init plan --target . --preset thinking-lab
 claude-project-init plan --target . --all
 claude-project-init plan --target . --no-packs
@@ -108,10 +103,8 @@ node bin/claude-project-init.mjs plan --target . --recommended
 
 | Preset | Packs |
 | --- | --- |
-| `recommended` | `work-journal`, `clear-thinking`, `project-docs`, `verify-flow` |
-| `minimal` | `project-docs`, `verify-flow` |
-| `design` | `work-journal`, `clear-thinking`, `project-docs`, `verify-flow`, `frontend-design-guide` |
-| `thinking-lab` | `work-journal`, `clear-thinking`, `thinking-distiller`, `project-docs`, `verify-flow` |
+| `recommended` | `work-journal`, `clear-thinking` |
+| `thinking-lab` | `work-journal`, `clear-thinking`, `thinking-distiller` |
 
 > 依赖会自动补齐：如果手动只选择 `thinking-distiller`，plan 中也会出现 `clear-thinking`，并标记为 `selectionReason: "dependency"`。
 
@@ -162,13 +155,9 @@ node bin/claude-project-init.mjs plan --target . --recommended
         ├── clear-thinking/
         │   ├── SKILL.md
         │   └── resources/
-        ├── thinking-distiller/
-        │   ├── SKILL.md
-        │   └── resources/
-        ├── project-docs/
-        │   └── SKILL.md
-        └── verify-flow/
-            └── SKILL.md
+        └── thinking-distiller/
+            ├── SKILL.md
+            └── resources/
 ```
 
 ## 开发
