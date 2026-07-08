@@ -19,6 +19,7 @@ node bin/claude-project-init.mjs list --json
 node bin/claude-project-init.mjs plan --target . --recommended
 node bin/claude-project-init.mjs plan --target . --preset thinking-lab
 node bin/claude-project-init.mjs plan --target . --packs thinking-distiller
+node bin/claude-project-init.mjs plan --target . --recommended --require-git-policy
 node bin/claude-project-init.mjs plan --target . --recommended --git-policy source-repo
 node bin/claude-project-init.mjs plan --target . --no-packs
 ```
@@ -169,6 +170,7 @@ node bin/claude-project-init.mjs list --json
 node bin/claude-project-init.mjs plan --target .tmp/demo-workspace --all --json
 node bin/claude-project-init.mjs plan --target . --recommended --git-policy source-repo --json
 node bin/claude-project-init.mjs plan --target . --recommended --git-policy team-shared --json
+node bin/claude-project-init.mjs plan --target . --recommended --require-git-policy --git-policy source-repo --json
 ```
 
 ## 目录资源导入守则

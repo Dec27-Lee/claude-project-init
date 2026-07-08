@@ -15,6 +15,7 @@
 - 执行各 skill pack 声明的工作区初始化，例如创建 `local/work-journal/index.md`
 - 根据现有 `.claude/skills` 刷新通用 `CLAUDE.md` 规则块
 - 写入 `.claude/project-init.lock.json` 记录安装状态
+- 选择 Git 可见性策略，决定初始化产物是本地保留、公开审查还是团队共享
 
 ## 安装方式
 
@@ -90,6 +91,7 @@ claude-project-init plan --target . --all
 claude-project-init plan --target . --no-packs
 claude-project-init plan --target . --packs work-journal,clear-thinking
 claude-project-init plan --target . --packs thinking-distiller
+claude-project-init plan --target . --recommended --require-git-policy
 claude-project-init plan --target . --recommended --git-policy source-repo
 claude-project-init apply --target . --preset thinking-lab --git-policy public-repo --write-git-exclude --yes
 ```
@@ -135,6 +137,8 @@ node bin/claude-project-init.mjs plan --target . --recommended
 
 初始化会生成 `CLAUDE.md`、`.claude/`、`local/` 等工作区文件。它们是否应该提交到仓库，取决于工作区性质。CLI 支持 `--git-policy` 给出 plan 提示，并可在用户显式要求时写入本地 `.git/info/exclude`。
 
+`/claude-project-init:init` 应在运行 plan 前让用户明确选择策略；CLI 也提供 `--require-git-policy`，用于防止交互入口漏问。若未传 `--git-policy` 且启用该参数，CLI 会直接报错提示必须选择策略。
+
 | 策略 | 适用场景 | 提交建议 | 本地 exclude 建议 |
 | --- | --- | --- | --- |
 | `local-only` | 个人本地工作区 | `CLAUDE.md`、`.claude/`、`local/` 都只本地保留 | `/CLAUDE.md`、`/.claude/`、`/local/` |
@@ -145,11 +149,14 @@ node bin/claude-project-init.mjs plan --target . --recommended
 示例：
 
 ```bash
+claude-project-init plan --target . --recommended --require-git-policy
 claude-project-init plan --target . --recommended --git-policy source-repo
 claude-project-init apply --target . --recommended --git-policy source-repo --write-git-exclude --yes
 ```
 
 `--write-git-exclude` 只写本地 `.git/info/exclude`，不会修改仓库 `.gitignore`，也不会提交任何 Git 变更。
+
+如果更新插件后仍看不到 Git 策略选择，请确认安装版本至少为 `0.1.1`，然后执行 `/reload-plugins` 后重新调用 `/claude-project-init:init`。
 
 ## 目标工作区生成结构
 

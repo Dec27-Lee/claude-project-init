@@ -2,7 +2,7 @@
   "name": "claude-project-init",
   "displayName": "Claude Project Init",
   "description": "为新工作区交互式安装 workspace skills，并初始化 CLAUDE.md、.claude/workspace-index.md、.claude/settings.json、技能索引和 skill 声明的 local 文件。",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "Dec27-Lee"
   },

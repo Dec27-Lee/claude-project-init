@@ -1,5 +1,5 @@
 ---
-description: 初始化当前或指定工作区的 Claude Code 项目配置。让用户选择要安装的 workspace skills，并生成或合并 CLAUDE.md、.claude/settings.json、.claude/skills/INDEX.md、.claude/workspace-index.md 和技能声明的 local 初始化文件。仅在用户明确要求初始化项目、安装工作区技能或执行 project init 时使用。
+description: 初始化当前或指定工作区的 Claude Code 项目配置。让用户选择要安装的 workspace skills 和 Git 可见性策略，并生成或合并 CLAUDE.md、.claude/settings.json、.claude/skills/INDEX.md、.claude/workspace-index.md 和技能声明的 local 初始化文件。仅在用户明确要求初始化项目、安装工作区技能或执行 project init 时使用。
 disable-model-invocation: true
 argument-hint: "[target path] [recommended|thinking-lab|all|手动选择]"
 ---
@@ -31,10 +31,12 @@ argument-hint: "[target path] [recommended|thinking-lab|all|手动选择]"
 6. 不修改用户全局 `~/.claude`。
 7. 不安装依赖、不访问网络、不执行项目命令、不提交 Git。
 8. 如果用户选择的 pack 有依赖，允许 CLI 自动补齐依赖，但必须在 plan 中向用户说明。
-9. 运行 plan 前必须选择或说明 Git 可见性策略：个人本地用 `local-only`，公开仓库用 `public-repo`，私有团队共享用 `team-shared`，插件/skill 源码仓库用 `source-repo`。
-10. 如果目标目录包含 `.claude-plugin/plugin.json`、`resources/packs/` 或插件源码结构，优先建议 `source-repo`，并提醒不要提交 dogfood 生成的 `.claude/`、`local/`、`CLAUDE.md`。
-11. 不主动修改 `.gitignore`；只有用户明确同意本地防误提交时，才在 apply 中加入 `--write-git-exclude` 写入本地 `.git/info/exclude`。
-12. 如果 plan 显示冲突，不要强行覆盖；让用户先处理冲突或减少选择的 pack。
+9. 运行 plan 前必须明确让用户选择 Git 可见性策略；除非用户已经在参数中写明策略，否则不要直接使用自动推断。
+10. 调用 CLI 时使用 `--require-git-policy` 防止漏问；如果未传 `--git-policy`，CLI 会报错提醒必须选择。
+11. 策略选项：个人本地用 `local-only`，公开仓库用 `public-repo`，私有团队共享用 `team-shared`，插件/skill 源码仓库用 `source-repo`。
+12. 如果目标目录包含 `.claude-plugin/plugin.json`、`resources/packs/` 或插件源码结构，优先建议 `source-repo`，但仍要让用户确认，并提醒不要提交 dogfood 生成的 `.claude/`、`local/`、`CLAUDE.md`。
+13. 不主动修改 `.gitignore`；只有用户明确同意本地防误提交时，才在 apply 中加入 `--write-git-exclude` 写入本地 `.git/info/exclude`。
+14. 如果 plan 显示冲突，不要强行覆盖；让用户先处理冲突或减少选择的 pack。
 
 ## 可用命令
 
@@ -48,6 +50,7 @@ claude-project-init plan --target <path> --all
 claude-project-init plan --target <path> --no-packs
 claude-project-init plan --target <path> --packs work-journal,clear-thinking
 claude-project-init plan --target <path> --packs thinking-distiller
+claude-project-init plan --target <path> --recommended --require-git-policy
 claude-project-init plan --target <path> --recommended --git-policy source-repo
 claude-project-init apply --target <path> --packs thinking-distiller --git-policy public-repo --write-git-exclude --yes
 ```
@@ -70,11 +73,12 @@ node bin/claude-project-init.mjs list
    - `all`：全部技能
    - 手动选择：让用户多选 pack id；如选择 `thinking-distiller`，CLI 会自动补齐依赖 `clear-thinking`
    - `--no-packs`：不安装新技能，只根据当前 `.claude/skills`、`CLAUDE.md` 和长期资料入口初始化/刷新 `CLAUDE.md` 与 `.claude/workspace-index.md`
-4. 选择 Git 可见性策略：
+4. 明确询问用户选择 Git 可见性策略，不要跳过这一步：
    - `local-only`：个人本地，初始化产物不提交
    - `public-repo`：公开仓库，`CLAUDE.md` 审查后可提交，`.claude/` 和 `local/` 默认不提交
    - `team-shared`：私有团队共享，提交团队确认的 Claude 配置，排除运行态记录
    - `source-repo`：插件/skill 源码仓库，不提交 dogfood 生成的 `.claude/`、`local/`、`CLAUDE.md`
+   - 如果用户没有选择，先运行带 `--require-git-policy` 的 plan 验证会被 CLI 阻止，然后回到本步骤让用户选择。
 5. 运行 plan，例如：
 
 ```bash

@@ -76,8 +76,8 @@ function usage() {
 
 用法：
   claude-project-init list [--json]
-  claude-project-init plan --target <path> [--packs a,b | --preset name | --recommended | --all | --no-packs] [--git-policy local-only|public-repo|team-shared|source-repo] [--write-git-exclude] [--json]
-  claude-project-init apply --target <path> [--packs a,b | --preset name | --recommended | --all | --no-packs] [--git-policy local-only|public-repo|team-shared|source-repo] [--write-git-exclude] [--yes] [--json]
+  claude-project-init plan --target <path> [--packs a,b | --preset name | --recommended | --all | --no-packs] [--git-policy local-only|public-repo|team-shared|source-repo] [--require-git-policy] [--write-git-exclude] [--json]
+  claude-project-init apply --target <path> [--packs a,b | --preset name | --recommended | --all | --no-packs] [--git-policy local-only|public-repo|team-shared|source-repo] [--require-git-policy] [--write-git-exclude] [--yes] [--json]
 
 示例：
   claude-project-init list
@@ -89,7 +89,7 @@ function usage() {
 
 function parseArgs(argv) {
   const args = { _: [] };
-  const booleanFlags = new Set(['json', 'recommended', 'all', 'yes', 'help', 'no-packs', 'write-git-exclude']);
+  const booleanFlags = new Set(['json', 'recommended', 'all', 'yes', 'help', 'no-packs', 'require-git-policy', 'write-git-exclude']);
   const valueFlags = new Set(['target', 'packs', 'preset', 'git-policy']);
   for (let i = 0; i < argv.length; i += 1) {
     const token = argv[i];
@@ -237,7 +237,10 @@ function detectDefaultGitPolicy(target) {
   return 'local-only';
 }
 
-function resolveGitPolicy(target, policyName) {
+function resolveGitPolicy(target, policyName, requireExplicit = false) {
+  if (requireExplicit && !policyName) {
+    throw new Error(`需要显式选择 --git-policy。可用值：${Object.keys(GIT_POLICIES).join(', ')}`);
+  }
   const name = policyName || detectDefaultGitPolicy(target);
   const policy = GIT_POLICIES[name];
   if (!policy) {
@@ -1208,7 +1211,7 @@ function main() {
 
   const target = resolveTarget(args.target || process.cwd());
   const packs = selectPacks(manifest, args);
-  const gitPolicy = resolveGitPolicy(target, args['git-policy']);
+  const gitPolicy = resolveGitPolicy(target, args['git-policy'], args['require-git-policy']);
   const plan = buildPlan(target, manifest, packs, { gitPolicy, writeGitExclude: args['write-git-exclude'] });
 
   if (command === 'plan') {
